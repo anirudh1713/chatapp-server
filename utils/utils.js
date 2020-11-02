@@ -7,7 +7,7 @@ exports.isRequiredMessage = (field) => {
 //ERROR FUNC FOR CONTROLLERS
 exports.errorFunc = (error, res) => {
   console.log(error);
-  res.status(500).send({ error });
+  res.status(500).send({ error: { msg: error.message } });
 };
 
 //VALIDATION FUNCTION FOR ROUTES
