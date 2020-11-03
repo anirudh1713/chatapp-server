@@ -43,8 +43,8 @@ exports.resetPasswordEmail = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
-    if(!user) return res.status(400).send({ error: "Invalid user" });
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '5m' });
+    if(!user) return res.status(400).send({ error: { msg: "Invalid user" } });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
     sendEmail(email, 'Reset Password', `
     <!DOCTYPE html>
     <html lang="en">
@@ -68,7 +68,7 @@ exports.resetPasswordEmail = async (req, res, next) => {
     <h1>Forgot Password, No Worries! </h1>
     You recently requested to reset your password for Chat-App account. <br/>
     Click the link Below to Reset password <br/><br/>
-    <a href="http://localhost:3000/reset-password/${token}"> Click Here to Reset Password </a><br/><br/>
+    <a href="http://localhost:3000/forgotPassword/${token}"> Click Here to Reset Password </a><br/><br/>
     If you did not request a password reset , please ignore this email
     or reply to let us know.
     <br/>
@@ -88,10 +88,10 @@ exports.resetPassword = async (req, res, next) => {
   try {
     const token = req.params.token;
     const { password } = req.body;
-    if (!password) return res.status(400).send({ error: "Enter password." });
+    if (!password) return res.status(400).send({ error: { msg: "Enter password." } });
     const userId = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(userId.userId);
-    if(!user) return res.status(400).send({ error: "Invalid user" });
+    if(!user) return res.status(400).send({ error: { msg: "Invalid user" } });
     user.password = await bcrypt.hash(password, 10);
     await user.save();
     res.status(201).send({ user });
