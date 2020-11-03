@@ -18,4 +18,12 @@ route.post('/user/signin', utils.validate([
   body('email').isEmail()
 ]), userController.signinUser);
 
+//RESETPASSWORDEMAIL
+route.post('/reset-password', utils.validate([
+  body('email').isEmail()
+]), userController.resetPasswordEmail);
+
+//RESETPASSWORD
+route.post('/reset-password/:token', userController.resetPassword);
+
 module.exports = route;
