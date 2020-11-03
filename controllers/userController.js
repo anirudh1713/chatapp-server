@@ -17,7 +17,8 @@ exports.signupUser = async (req, res, next) => {
       avatar,
       password
     });
-    res.status(201).send(user);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.status(201).send({ user, jwt: token });
   } catch (error) {
     utils.errorFunc(error, res);
   }
