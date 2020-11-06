@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
     required: [true, utils.isRequiredMessage('Password')]
   },
   avatar: {
-    type: String
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

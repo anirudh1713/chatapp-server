@@ -1,9 +1,11 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const fileUpload = require('../utils/fileUpload');
 const utils = require('../utils/utils');
 const sendEmail = require('../utils/sendEmail');
 const User = require('../models/User');
+const { response } = require('express');
 
 //USER SIGNUP
 exports.signupUser = async (req, res, next) => {
@@ -101,36 +103,36 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 
-//ADD PROFILE PHOTO
-const { Storage } = require('@google-cloud/storage');
-const storage = new Storage({
-    projectId: process.env.GCLOUD_PROJECT_ID,
-    keyFilename: process.env.GCLOUD_APPLICATION_CREDENTIALS
-});
-const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET_URL_PROFILE);
-
-exports.addProfilePhoto = async (req, res, next) => {
+//EDIT USER PROFILE
+exports.editProfile = async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).send({ error: { msg: "No file found." } });
-      //name the file
-      const blob = bucket.file(`profile_images/${req.user._id}.png`);
-      //create blob in bucket referencing the file
-      const blobWriter = blob.createWriteStream({
-          metadata: {
-              contentType: req.file.mimetype
-          }
-      });
-      blobWriter.on('error', (err) => {
-          console.log(err);
-          return res.status(500).send({ error: { msg: "Something went wrong." } });
-      });
-      blobWriter.on('finish', async () => {
-          const url = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/profile_images%2F${encodeURI(blob.name.split('/')[1])}?alt=media`;
-          req.user.avatar = url;
-          const user = await req.user.save();
-          res.status(201).send({ user });
-      });
-      blobWriter.end(req.file.buffer);
+    //CHECK IF USER HAS AVATAR OR NOT AND HAS PASSED VALID ARGS
+    if(req.user.avatar && !req.file && !req.body.avatar) {
+      return res.status(400).send({ error: { msg: "Please add a new avatar or add previous one." } });
+    }
+    let { name, email, avatar } = req.body;
+
+    //CHECK IF OTHER USER HAS SAME EMAIL IN USE
+    const existingUser = await User.findOne({ email });
+    if (existingUser && existingUser._id === req.user._id) return res.status(400).send({ error: { msg: "Email already in use." } });
+
+    if(!avatar) avatar = null;
+
+    //IF USER UPLOADED OR CHANGED PROFILE PHOTO
+    if(req.file) {
+      const url = await fileUpload(req);
+      req.user.avatar = url;
+      req.user.name = name;
+      req.user.email = email;
+      const user = await req.user.save();
+      return res.status(201).send(user);
+    }
+    //IF USER DID NOT CHANGE PROFILE PHOTO ONLY CHANGED DETAILS
+    req.user.name = name;
+    req.user.email = email;
+    req.user.avatar = avatar;
+    const user = await req.user.save();
+    return res.status(201).send(user);
   } catch (error) {
     utils.errorFunc(error, res);
   }

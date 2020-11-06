@@ -28,7 +28,7 @@ route.post('/reset-password', utils.validate([
 //RESET PASSWORD
 route.post('/reset-password/:token', userController.resetPassword);
 
-//ADD PROFILEPHOTO
+//UPLOAD FILE MULTER
 function uploadFile(req, res, next) {
   const upload = multer({
     limits: {
@@ -43,7 +43,6 @@ function uploadFile(req, res, next) {
   }).single('profileImage');
 
   upload(req, res, function (err) {
-    console.log(`\n\n\n ${err} \n\n\n`);
     if (err instanceof multer.MulterError) {
       return res.status(400).send({error: { msg: err }});
     } else if (err) {
@@ -52,7 +51,11 @@ function uploadFile(req, res, next) {
     next();
   })
 };
-//PROFILE PHOTO ROUTE
-route.post('/user/avatar', auth, uploadFile, userController.addProfilePhoto);
+//EDIT PROFILE ROUTE
+route.post('/user/profile', auth, uploadFile, utils.validate([
+  body('email').isEmail(),
+  body('avatar').optional({ nullable: true }).isURL(),
+  body('name').isAlpha()
+]), userController.editProfile);
 
 module.exports = route;
