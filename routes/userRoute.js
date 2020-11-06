@@ -1,8 +1,10 @@
 const express = require('express');
 const { body } = require('express-validator');
+const multer = require('multer');
 
 const utils = require('../utils/utils');
 const userController = require('../controllers/userController');
+const auth = require('../middlewares/auth');
 
 const route = new express.Router();
 
@@ -18,12 +20,39 @@ route.post('/user/signin', utils.validate([
   body('email').isEmail()
 ]), userController.signinUser);
 
-//RESETPASSWORDEMAIL
+//RESET PASSWORD EMAIL
 route.post('/reset-password', utils.validate([
   body('email').isEmail()
 ]), userController.resetPasswordEmail);
 
-//RESETPASSWORD
+//RESET PASSWORD
 route.post('/reset-password/:token', userController.resetPassword);
+
+//ADD PROFILEPHOTO
+function uploadFile(req, res, next) {
+  const upload = multer({
+    limits: {
+      fileSize: 1 * 1024 * 1024
+    },
+    fileFilter: function (req, file, cb) {
+      if(!file.originalname.match(/\.(jpeg|jpg|png)$/i)) {
+        cb('upload image only.', false);
+      }
+      cb(undefined, true);
+    }
+  }).single('profileImage');
+
+  upload(req, res, function (err) {
+    console.log(`\n\n\n ${err} \n\n\n`);
+    if (err instanceof multer.MulterError) {
+      return res.status(400).send({error: { msg: err }});
+    } else if (err) {
+      return res.status(400).send({ error: { msg: err } });
+    }
+    next();
+  })
+};
+//PROFILE PHOTO ROUTE
+route.post('/user/avatar', auth, uploadFile, userController.addProfilePhoto);
 
 module.exports = route;
