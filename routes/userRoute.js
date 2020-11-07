@@ -58,4 +58,9 @@ route.post('/user/profile', auth, uploadFile, utils.validate([
   body('name').isAlpha()
 ]), userController.editProfile);
 
+//SEARCH USERS
+route.post('/user/search', auth, utils.validate([
+  body('search').isAlpha()
+]), userController.searchUser);
+
 module.exports = route;

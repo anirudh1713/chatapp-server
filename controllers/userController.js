@@ -137,3 +137,15 @@ exports.editProfile = async (req, res, next) => {
     utils.errorFunc(error, res);
   }
 };
+
+//SEARCH USER
+exports.searchUser = async (req, res, next) => {
+  try {
+    const { search } = req.body;
+    //find all users (exclude current user)
+    const users = await User.find({ _id: { $ne: req.user._id }, name: { $regex: new RegExp("^" + search, 'i') } });
+    res.send(users);
+  } catch (error) {
+    utils.errorFunc(error, res);
+  }
+};
