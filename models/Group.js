@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const groupSchema = new mongoose.Schema({
   name: {
-    type: String
+    type: String,
+    default: null
   },
   type: {
     type: String,

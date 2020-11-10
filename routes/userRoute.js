@@ -20,6 +20,9 @@ route.post('/user/signin', utils.validate([
   body('email').isEmail()
 ]), userController.signinUser);
 
+//AUTO SIGNIN USER
+route.post('/user/autosignin', auth, userController.autoSignin);
+
 //RESET PASSWORD EMAIL
 route.post('/reset-password', utils.validate([
   body('email').isEmail()

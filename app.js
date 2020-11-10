@@ -16,7 +16,8 @@ const server = require('http').createServer(app);
 app.use(express.json());
 app.use(cors());
 
-const io = require('./socket').init(server);
+require('./socket').init(server);
+require('./sockets/userSocket');
 
 //ROUTES MIDDLEWARES
 app.use(userRoute);

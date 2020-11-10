@@ -41,6 +41,15 @@ exports.signinUser = async (req, res, next) => {
   }
 };
 
+//VERIFY DETAILS FOR AUTOSIGNIN
+exports.autoSignin = async (req, res, next) => {
+  try {
+    res.send({ user: req.user, jwt: req.token });
+  }catch (e) {
+    utils.errorFunc(e, res);
+  }
+};
+
 //USER RESET PASSWORD
 exports.resetPasswordEmail = async (req, res, next) => {
   try {
